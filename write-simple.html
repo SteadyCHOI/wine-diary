@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>테이스팅 노트 작성 - Wine Diary</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- 헤더 -->
+        <header class="header">
+            <div class="header-content">
+                <h1><i class="fas fa-wine-glass-alt"></i> Wine Diary</h1>
+                <div class="user-info">
+                    <span id="user-name">사용자님</span>
+                    <button class="logout-btn" onclick="logout()">
+                        <i class="fas fa-sign-out-alt"></i> 로그아웃
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- 네비게이션 -->
+        <nav class="nav">
+            <a href="dashboard.html" class="nav-item">
+                <i class="fas fa-home"></i> 홈
+            </a>
+            <a href="write-simple.html" class="nav-item active">
+                <i class="fas fa-plus"></i> 노트 작성
+            </a>
+            <a href="notes.html" class="nav-item">
+                <i class="fas fa-book"></i> 내 노트
+            </a>
+        </nav>
+
+        <!-- 메인 컨텐츠 -->
+        <main class="main-content">
+            <div class="write-page">
+                <div class="page-header">
+                    <h2><i class="fas fa-plus"></i> 새 테이스팅 노트 작성</h2>
+                </div>
+
+                <form id="tastingForm" class="tasting-form">
+                    <!-- 와인 선택 섹션 -->
+                    <div class="form-section">
+                        <h3><i class="fas fa-wine-bottle"></i> 와인 선택</h3>
+
+                        <!-- 와인 검색 -->
+                        <div class="wine-search-container" id="wine-search-container">
+                            <div class="search-box">
+                                <input type="text" id="wine-search" placeholder="와인명을 검색하세요..." autocomplete="off">
+                                <i class="fas fa-search"></i>
+                            </div>
+                            <div class="wine-results" id="wine-results"></div>
+                        </div>
+
+                        <!-- 선택된 와인 -->
+                        <div class="selected-wine" id="selected-wine" style="display: none;">
+                            <div class="selected-wine-info">
+                                <h4 id="selected-wine-name"></h4>
+                                <p id="selected-wine-details"></p>
+                            </div>
+                            <button type="button" class="clear-selection" onclick="clearWineSelection()">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 평점 섹션 -->
+                    <div class="form-section">
+                        <h3><i class="fas fa-star"></i> 평점</h3>
+                        <div class="rating-container">
+                            <div class="stars" id="star-rating">
+                                <span class="star" data-rating="1">★</span>
+                                <span class="star" data-rating="2">★</span>
+                                <span class="star" data-rating="3">★</span>
+                                <span class="star" data-rating="4">★</span>
+                                <span class="star" data-rating="5">★</span>
+                            </div>
+                            <div id="rating-text" class="rating-text">별점을 선택하세요</div>
+                        </div>
+                    </div>
+
+                    <!-- 특성 평가 섹션 -->
+                    <div class="form-section">
+                        <h3><i class="fas fa-sliders-h"></i> 특성 평가</h3>
+                        <div class="sliders-container">
+                            <div class="slider-item">
+                                <label for="body">바디감</label>
+                                <input type="range" id="body" min="1" max="5" value="3" class="slider">
+                                <span id="body-value" class="slider-value">3</span>
+                            </div>
+                            <div class="slider-item">
+                                <label for="tannin">탄닌</label>
+                                <input type="range" id="tannin" min="1" max="5" value="3" class="slider">
+                                <span id="tannin-value" class="slider-value">3</span>
+                            </div>
+                            <div class="slider-item">
+                                <label for="acidity">산도</label>
+                                <input type="range" id="acidity" min="1" max="5" value="3" class="slider">
+                                <span id="acidity-value" class="slider-value">3</span>
+                            </div>
+                            <div class="slider-item">
+                                <label for="sweetness">단맛</label>
+                                <input type="range" id="sweetness" min="1" max="5" value="3" class="slider">
+                                <span id="sweetness-value" class="slider-value">3</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 테이스팅 노트 섹션 -->
+                    <div class="form-section">
+                        <h3><i class="fas fa-edit"></i> 테이스팅 노트</h3>
+                        <textarea id="notes" rows="6" placeholder="이 와인에 대한 개인적인 느낌, 향, 맛, 여운 등을 자유롭게 작성해주세요..."></textarea>
+                    </div>
+
+                    <!-- 제출 버튼 -->
+                    <div class="form-actions">
+                        <button type="button" class="btn-secondary" onclick="goBack()">
+                            <i class="fas fa-arrow-left"></i> 취소
+                        </button>
+                        <button type="submit" class="btn-primary">
+                            <i class="fas fa-save"></i> 저장하기
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="https://developers.kakao.com/sdk/js/kakao.js"></script>
+    <script src="write.js"></script>
+</body>
+</html>

@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>내 테이스팅 노트 - Wine Diary</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- 헤더 -->
+        <header class="header">
+            <div class="header-content">
+                <h1><i class="fas fa-wine-glass-alt"></i> Wine Diary</h1>
+                <div class="user-info">
+                    <span id="user-name">사용자님</span>
+                    <button class="logout-btn" onclick="logout()">
+                        <i class="fas fa-sign-out-alt"></i> 로그아웃
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- 네비게이션 -->
+        <nav class="nav">
+            <a href="dashboard.html" class="nav-item">
+                <i class="fas fa-home"></i> 홈
+            </a>
+            <a href="write-simple.html" class="nav-item">
+                <i class="fas fa-plus"></i> 노트 작성
+            </a>
+            <a href="notes.html" class="nav-item active">
+                <i class="fas fa-book"></i> 내 노트
+            </a>
+        </nav>
+
+        <!-- 메인 컨텐츠 -->
+        <main class="main-content">
+            <!-- 페이지 헤더 -->
+            <div class="page-header">
+                <h2><i class="fas fa-book"></i> 내 테이스팅 노트</h2>
+                <div class="page-actions">
+                    <div class="search-box">
+                        <input type="text" id="search-input" placeholder="와인명으로 검색...">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <select id="sort-select" onchange="sortNotes()">
+                        <option value="latest">최신순</option>
+                        <option value="rating-high">평점 높은순</option>
+                        <option value="rating-low">평점 낮은순</option>
+                        <option value="wine-name">와인명순</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- 통계 카드 -->
+            <div class="stats-cards">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-wine-bottle"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-number" id="total-notes">0</div>
+                        <div class="stat-label">총 노트 수</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-number" id="average-rating">0.0</div>
+                        <div class="stat-label">평균 평점</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-calendar"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-number" id="this-month-notes">0</div>
+                        <div class="stat-label">이번 달 노트</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 필터 -->
+            <div class="filters">
+                <div class="filter-group">
+                    <label>평점 필터:</label>
+                    <div class="rating-filter">
+                        <button class="filter-btn active" data-rating="all">전체</button>
+                        <button class="filter-btn" data-rating="5">5점</button>
+                        <button class="filter-btn" data-rating="4">4점 이상</button>
+                        <button class="filter-btn" data-rating="3">3점 이상</button>
+                    </div>
+                </div>
+                <div class="filter-group">
+                    <label>기간 필터:</label>
+                    <select id="period-filter" onchange="filterByPeriod()">
+                        <option value="all">전체 기간</option>
+                        <option value="week">최근 1주일</option>
+                        <option value="month">최근 1개월</option>
+                        <option value="3months">최근 3개월</option>
+                        <option value="year">최근 1년</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- 로딩 인디케이터 -->
+            <div id="loading" class="loading" style="display: none;">
+                <i class="fas fa-spinner fa-spin"></i> 로딩 중...
+            </div>
+
+            <!-- 노트 목록 -->
+            <div class="notes-grid" id="notes-container">
+                <!-- JavaScript에서 동적으로 생성 -->
+            </div>
+
+            <!-- 빈 상태 메시지 -->
+            <div id="empty-state" class="empty-state" style="display: none;">
+                <div class="empty-icon">
+                    <i class="fas fa-wine-glass"></i>
+                </div>
+                <h3>아직 테이스팅 노트가 없습니다</h3>
+                <p>첫 번째 와인 테이스팅 노트를 작성해보세요!</p>
+                <a href="write-simple.html" class="btn-primary">
+                    <i class="fas fa-plus"></i> 노트 작성하기
+                </a>
+            </div>
+
+            <!-- 페이지네이션 -->
+            <div class="pagination" id="pagination" style="display: none;">
+                <button id="prev-btn" class="pagination-btn" onclick="loadPrevPage()">
+                    <i class="fas fa-chevron-left"></i> 이전
+                </button>
+                <div class="pagination-info">
+                    <span id="page-info">1 / 1</span>
+                </div>
+                <button id="next-btn" class="pagination-btn" onclick="loadNextPage()">
+                    다음 <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </main>
+    </div>
+
+    <!-- 노트 상세보기 모달 -->
+    <div id="note-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-wine-name">와인명</h3>
+                <button class="close-btn" onclick="closeModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="wine-info">
+                    <div class="wine-details">
+                        <p><strong>타입:</strong> <span id="modal-wine-type"></span></p>
+                        <p><strong>지역:</strong> <span id="modal-wine-region"></span></p>
+                        <p><strong>생산자:</strong> <span id="modal-wine-producer"></span></p>
+                        <p><strong>테이스팅 날짜:</strong> <span id="modal-tasting-date"></span></p>
+                    </div>
+                    <div class="rating-display">
+                        <div class="stars" id="modal-stars"></div>
+                        <span class="rating-text" id="modal-rating-text"></span>
+                    </div>
+                </div>
+
+                <div class="characteristics">
+                    <h4>특성</h4>
+                    <div class="char-grid">
+                        <div class="char-item">
+                            <label>바디감</label>
+                            <div class="char-bar">
+                                <div class="char-fill" id="modal-body"></div>
+                            </div>
+                        </div>
+                        <div class="char-item">
+                            <label>탄닌</label>
+                            <div class="char-bar">
+                                <div class="char-fill" id="modal-tannin"></div>
+                            </div>
+                        </div>
+                        <div class="char-item">
+                            <label>산도</label>
+                            <div class="char-bar">
+                                <div class="char-fill" id="modal-acidity"></div>
+                            </div>
+                        </div>
+                        <div class="char-item">
+                            <label>단맛</label>
+                            <div class="char-bar">
+                                <div class="char-fill" id="modal-sweetness"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tasting-notes">
+                    <h4>테이스팅 노트</h4>
+                    <div class="notes-content" id="modal-notes"></div>
+                </div>
+
+                <div class="modal-actions">
+                    <button class="btn-secondary" onclick="editNote()">
+                        <i class="fas fa-edit"></i> 수정
+                    </button>
+                    <button class="btn-danger" onclick="deleteNote()">
+                        <i class="fas fa-trash"></i> 삭제
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="https://developers.kakao.com/sdk/js/kakao.js"></script>
+    <script src="notes.js"></script>
+</body>
+</html>

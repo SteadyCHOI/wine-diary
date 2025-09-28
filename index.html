@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WineNote - 당신만의 와인 스토리</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://developers.kakao.com/sdk/js/kakao.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .wine-bg {
+            background-image: url('https://images.unsplash.com/photo-1656423424617-2dd8ed370f54?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx3aW5lJTIwdGFzdGluZyUyMGVsZWdhbnR8ZW58MXx8fHwxNzU4NjA0NDUwfDA&ixlib=rb-4.1.0&q=80&w=1080');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+        .features-bg {
+            background-image: url('https://images.unsplash.com/photo-1527859117301-9c98fd2a1d1f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx3aW5lJTIwbm90ZWJvb2slMjB0YXN0aW5nJTIwbm90ZXN8ZW58MXx8fHwxNzU4NjA0NDUwfDA&ixlib=rb-4.1.0&q=80&w=1080');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        /**
+         * 카카오 SDK 초기화 및 설정
+         * 주의: 실제 사용을 위해서는 YOUR_APP_KEY를 실제 카카오 앱 키로 변경해야 합니다.
+         */
+        const initializeKakaoSDK = () => {
+            console.log('카카오 SDK 초기화 시작...');
+
+            // 카카오 SDK가 로드되었는지 확인
+            if (typeof Kakao === 'undefined') {
+                console.error('카카오 SDK가 로드되지 않았습니다. 네트워크 연결을 확인해주세요.');
+                return false;
+            }
+
+            // 이미 초기화되었는지 확인
+            if (Kakao.isInitialized()) {
+                console.log('카카오 SDK는 이미 초기화되었습니다.');
+                return true;
+            }
+
+            try {
+                // 테스트용 앱 키 - 실제 카카오 앱 키로 교체 필요
+                // 카카오 디벨로퍼스(https://developers.kakao.com)에서 앱 등록 후 JavaScript 키 사용
+                const APP_KEY = 'f8b9a6c4e3d2f1a7b8c9d0e1f2a3b4c5'; // ← 데모용 키 (실제 앱 키로 교체 필요)
+
+                if (APP_KEY === 'YOUR_KAKAO_APP_KEY') {
+                    console.warn('⚠️ 카카오 앱 키가 설정되지 않았습니다. 실제 앱 키로 변경해주세요.');
+                    alert('카카오 로그인을 사용하려면 앱 키 설정이 필요합니다.\n개발자 도구 콘솔을 확인해주세요.');
+                    return false;
+                }
+
+                Kakao.init(APP_KEY);
+                console.log('✅ 카카오 SDK 초기화 완료');
+                console.log('SDK 버전:', Kakao.VERSION);
+                return true;
+            } catch (error) {
+                console.error('카카오 SDK 초기화 실패:', error);
+                return false;
+            }
+        };
+
+        // 페이지 로드 시 카카오 SDK 초기화
+        const isKakaoReady = initializeKakaoSDK();
+
+        /**
+         * Header Component - 네비게이션 바와 액션 버튼
+         */
+        function Header() {
+
+            /**
+             * 테이스팅 노트 작성 페이지로 이동
+             */
+            const handleWriteNote = () => {
+                console.log('📝 테이스팅 노트 작성 페이지로 이동...');
+                window.location.href = 'dashboard.html';
+            };
+
+            return (
+                <header className="w-full bg-white/95 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-50">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div className="flex justify-between items-center h-16">
+                            <div className="flex items-center">
+                                <h1 className="text-2xl font-medium text-red-800">WineNote</h1>
+                            </div>
+
+                            <nav className="hidden md:flex items-center space-x-8">
+                                <a href="#" className="text-gray-700 hover:text-red-800 transition-colors">
+                                    테이스팅 노트
+                                </a>
+                                <a href="#" className="text-gray-700 hover:text-red-800 transition-colors">
+                                    와인 검색
+                                </a>
+                                <a href="#" className="text-gray-700 hover:text-red-800 transition-colors">
+                                    커뮤니티
+                                </a>
+                            </nav>
+
+                            <button
+                                onClick={handleWriteNote}
+                                className="bg-red-800 hover:bg-red-900 text-white border-0 px-6 py-2 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md flex items-center font-medium"
+                            >
+                                <svg
+                                    width="16"
+                                    height="16"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    className="mr-2"
+                                >
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                                Write
+                            </button>
+                        </div>
+                    </div>
+                </header>
+            );
+        }
+
+        // Hero Component
+        function Hero() {
+            const handleWriteNote = () => {
+                console.log('📝 테이스팅 노트 작성 페이지로 이동...');
+                window.location.href = 'dashboard.html';
+            };
+
+            const handleViewCollection = () => {
+                // 와인 컬렉션 페이지로 이동 (향후 구현)
+                alert('와인 컬렉션 기능은 곧 추가될 예정입니다.');
+            };
+
+            return (
+                <section className="relative min-h-screen flex items-center justify-center overflow-hidden wine-bg">
+                    <div className="absolute inset-0 bg-black/40"></div>
+
+                    <div className="relative z-10 text-center text-white max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <h1 className="text-4xl md:text-6xl font-medium mb-6 leading-tight">
+                            당신만의 와인 스토리를
+                            <br />
+                            <span className="text-yellow-300">기록하세요</span>
+                        </h1>
+
+                        <p className="text-lg md:text-xl mb-8 text-gray-200 max-w-2xl mx-auto leading-relaxed">
+                            각 와인의 향, 맛, 그리고 그 순간의 감정까지.
+                            WineNote와 함께 특별한 와인 테이스팅 여정을 시작하세요.
+                        </p>
+
+                        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                            <button
+                                onClick={handleWriteNote}
+                                className="bg-white text-black hover:bg-gray-100 px-8 py-3 text-lg rounded-full transition-all duration-200 shadow-lg hover:shadow-xl flex items-center"
+                            >
+                                <svg
+                                    width="20"
+                                    height="20"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    className="mr-2"
+                                >
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                                테이스팅 노트 작성하기
+                            </button>
+                            <button
+                                onClick={handleViewCollection}
+                                className="border-white border-2 text-white hover:bg-white hover:text-black px-8 py-3 text-lg rounded-full transition-all duration-200 flex items-center"
+                            >
+                                <svg
+                                    width="20"
+                                    height="20"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    className="mr-2"
+                                >
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                                </svg>
+                                와인 컬렉션 보기
+                            </button>
+                        </div>
+
+                        <div className="mt-6">
+                            <p className="text-gray-300 text-sm">
+                                지금 바로 시작해보세요! 로그인 없이도 사용 가능합니다.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 text-white animate-bounce">
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                        </svg>
+                    </div>
+                </section>
+            );
+        }
+
+        // Features Component
+        function Features() {
+            const features = [
+                {
+                    icon: "📝",
+                    title: "상세한 테이스팅 노트",
+                    description: "향, 맛, 질감 등 와인의 모든 특성을 체계적으로 기록하고 관리할 수 있습니다."
+                },
+                {
+                    icon: "🍷",
+                    title: "개인 와인 컬렉션",
+                    description: "마신 와인들을 한 곳에 모아 나만의 와인 라이브러리를 구축하세요."
+                },
+                {
+                    icon: "⭐",
+                    title: "평점 및 추천",
+                    description: "개인 취향을 분석하여 맞춤형 와인 추천을 받아보세요."
+                },
+                {
+                    icon: "📊",
+                    title: "테이스팅 분석",
+                    description: "시간에 따른 취향 변화와 선호도 패턴을 시각적으로 확인할 수 있습니다."
+                },
+                {
+                    icon: "🤝",
+                    title: "커뮤니티 공유",
+                    description: "다른 와인 애호가들과 테이스팅 노트를 공유하고 소통하세요."
+                },
+                {
+                    icon: "📱",
+                    title: "모바일 최적화",
+                    description: "언제 어디서나 편리하게 테이스팅 노트를 작성할 수 있습니다."
+                }
+            ];
+
+            return (
+                <section className="py-20 bg-gray-50">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div className="text-center mb-16">
+                            <h2 className="text-3xl md:text-4xl font-medium mb-4 text-red-800">
+                                WineNote의 특별한 기능들
+                            </h2>
+                            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+                                와인 테이스팅을 더욱 의미있게 만들어주는 다양한 기능들을 만나보세요
+                            </p>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20">
+                            {features.map((feature, index) => (
+                                <div key={index} className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-white rounded-lg">
+                                    <div className="p-8 text-center">
+                                        <div className="text-4xl mb-4">{feature.icon}</div>
+                                        <h3 className="text-xl font-medium mb-3 text-red-800">{feature.title}</h3>
+                                        <p className="text-gray-600 leading-relaxed">{feature.description}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                            <div>
+                                <h3 className="text-2xl md:text-3xl font-medium mb-6 text-red-800">
+                                    전문가처럼 와인을 평가하세요
+                                </h3>
+                                <p className="text-lg text-gray-600 mb-6 leading-relaxed">
+                                    체계적인 템플릿과 가이드를 통해 누구나 쉽게 전문적인
+                                    와인 테이스팅 노트를 작성할 수 있습니다.
+                                </p>
+                                <ul className="space-y-3 text-gray-600">
+                                    <li className="flex items-center">
+                                        <span className="text-green-500 mr-3">✓</span>
+                                        시각적 평가 (색상, 투명도, 점성)
+                                    </li>
+                                    <li className="flex items-center">
+                                        <span className="text-green-500 mr-3">✓</span>
+                                        후각적 평가 (1차, 2차, 3차 아로마)
+                                    </li>
+                                    <li className="flex items-center">
+                                        <span className="text-green-500 mr-3">✓</span>
+                                        미각적 평가 (단맛, 산도, 탄닌, 바디감)
+                                    </li>
+                                    <li className="flex items-center">
+                                        <span className="text-green-500 mr-3">✓</span>
+                                        종합적 평가 및 개인 소감
+                                    </li>
+                                </ul>
+                            </div>
+                            <div className="relative">
+                                <div className="w-full h-96 features-bg rounded-2xl shadow-2xl"></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            );
+        }
+
+        // Footer Component
+        function Footer() {
+            return (
+                <footer className="bg-red-800 text-white py-12">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+                            <div className="col-span-1 md:col-span-2">
+                                <h3 className="text-2xl font-medium mb-4">WineNote</h3>
+                                <p className="text-white/80 mb-4 leading-relaxed">
+                                    당신의 와인 테이스팅 여정을 기록하고 공유하세요.
+                                    매 순간의 감동을 놓치지 마세요.
+                                </p>
+                                <div className="flex space-x-4">
+                                    <a href="#" className="text-white/60 hover:text-white transition-colors">
+                                        이용약관
+                                    </a>
+                                    <a href="#" className="text-white/60 hover:text-white transition-colors">
+                                        개인정보처리방침
+                                    </a>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h4 className="font-medium mb-4">서비스</h4>
+                                <ul className="space-y-2 text-white/80">
+                                    <li><a href="#" className="hover:text-white transition-colors">테이스팅 노트</a></li>
+                                    <li><a href="#" className="hover:text-white transition-colors">와인 검색</a></li>
+                                    <li><a href="#" className="hover:text-white transition-colors">커뮤니티</a></li>
+                                    <li><a href="#" className="hover:text-white transition-colors">추천 시스템</a></li>
+                                </ul>
+                            </div>
+
+                            <div>
+                                <h4 className="font-medium mb-4">고객지원</h4>
+                                <ul className="space-y-2 text-white/80">
+                                    <li><a href="#" className="hover:text-white transition-colors">도움말</a></li>
+                                    <li><a href="#" className="hover:text-white transition-colors">FAQ</a></li>
+                                    <li><a href="#" className="hover:text-white transition-colors">문의하기</a></li>
+                                    <li><a href="#" className="hover:text-white transition-colors">피드백</a></li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div className="border-t border-white/20 mt-8 pt-8 text-center text-white/60">
+                            <p>&copy; 2024 WineNote. All rights reserved.</p>
+                        </div>
+                    </div>
+                </footer>
+            );
+        }
+
+        /**
+         * Main App Component - 전체 애플리케이션의 루트 컴포넌트
+         */
+        function App() {
+            useEffect(() => {
+                console.log('🚀 WineNote 앱 시작');
+
+                // 이미 로그인되어 있는지 확인
+                const savedUser = localStorage.getItem('wine_diary_user');
+                const token = localStorage.getItem('wine_diary_token');
+
+                if (savedUser && token) {
+                    console.log('✅ 이미 로그인되어 있음. 대시보드로 이동...');
+                    window.location.href = 'dashboard.html';
+                }
+            }, []);
+
+            return (
+                <div className="min-h-screen bg-white">
+                    <Header />
+                    <Hero />
+                    <Features />
+                    <Footer />
+                </div>
+            );
+        }
+
+        // Render the app
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>
